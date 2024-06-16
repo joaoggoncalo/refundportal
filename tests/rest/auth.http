@@ -1,0 +1,93 @@
+###
+POST {{protocol}}{{host}}:{{port}}/tokens
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "admin_user",
+  "password": "admin_password"
+}
+
+> {%
+    client.global.set("admin_token", response.body.accessToken);
+%}
+
+###
+POST {{protocol}}{{host}}:{{port}}/tokens
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "controller_user",
+  "password": "controller_password"
+}
+
+> {%
+    client.global.set("controller_token", response.body.accessToken);
+%}
+
+###
+POST {{protocol}}{{host}}:{{port}}/tokens
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "collector_user",
+  "password": "collector_password"
+}
+
+> {%
+    client.global.set("collector_token", response.body.accessToken);
+%}
+
+###
+POST {{protocol}}{{host}}:{{port}}/users
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "customer_test",
+  "email": "customertest@email.com",
+  "password": "customer_password",
+  "role": 2
+}
+
+> {%
+    client.global.set("customer_token", response.body.accessToken);
+%}
+
+### Try to log in with wrong email
+POST {{protocol}}{{host}}:{{port}}/tokens
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "noexistinguser",
+  "password": "12345678"
+}
+
+> {%
+    client.test(
+        "No user found with specified credentials",
+        function(){
+            client.assert(response.status === 404, `Expected error code 404 when logging in with incorrect username, but received ${response.status}`);
+        });
+%}
+
+### Try to log in with wrong password
+POST {{protocol}}{{host}}:{{port}}/tokens
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "admin_user",
+  "password": "wrongpassword123"
+}
+
+> {%
+    client.test(
+        "No user found with specified credentials",
+        function(){
+            client.assert(response.status === 404, `Expected error code 404 when logging in with incorrect password, but received ${response.status}`);
+        });
+%}

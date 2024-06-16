@@ -1,0 +1,1 @@
+<p class="w-full text-center text-6xl mt-64">You're not authorised to visit this page</p>

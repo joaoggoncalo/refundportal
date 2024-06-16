@@ -1,0 +1,179 @@
+### Get all the users
+GET {{protocol}}{{host}}:{{port}}/users
+Authorization: Bearer {{admin_token}}
+
+> {%
+    client.test(
+        "Get all users",
+        function () {
+            client.assert(response.status === 200, `Failed to get list of users when expected status code 200, received ${response.status}`);
+        }
+    )
+%}
+
+### Get a specific user based on id
+GET {{protocol}}{{host}}:{{port}}/users/1
+Accept: application/json
+Authorization: Bearer {{admin_token}}
+
+> {%
+   client.test(
+       "Get specific user",
+       function () {
+           client.assert(response.status === 200, `Filed to get user when expected status code 200, received ${response.status}`);
+       }
+   )
+ %}
+
+### Get a specific user based on id - bad weather
+GET {{protocol}}{{host}}:{{port}}/users/-1
+Accept: application/json
+Authorization: Bearer {{admin_token}}
+
+
+> {%
+   client.test(
+       "Get specific user",
+       function () {
+           client.assert(response.status === 404, `Expected error code 404 when getting user, but received ${response.status}`);
+       }
+   )
+ %}
+
+### Create a new user
+POST {{protocol}}{{host}}:{{port}}/users
+Content-Type: application/json
+Authorization: Bearer {{admin_token}}
+
+{
+  "username": "customer_test",
+  "password": "customer_password",
+  "role": 2,
+  "email": "customertest@example.com"
+}
+
+> {%
+    client.test(
+        "Create new user",
+        function () {
+            client.assert(response.status === 201, "Failed to create user");
+            const user = JSON.parse(request.body());
+            client.assert(user.username === "customer_test", "username variable not assigned correctly");
+            client.assert(user.email === "customertest@example.com", "Email variable not assigned correctly");
+            client.assert(user.password === "customer_password", "Password variable not assigned correctly");
+            client.assert(user.role === 2, "Role variable not assigned correctly");
+        }
+    )
+%}
+
+
+### Create a new user - bad weather
+POST {{protocol}}{{host}}:{{port}}/users
+Content-Type: application/json
+Authorization: Bearer {{admin_token}}
+
+{
+  "username": -1,
+  "password": "customer_password",
+  "role": 2,
+  "email": "customertest@example.com"
+}
+
+> {%
+    client.test(
+        "Create new user",
+        function () {
+            client.assert(response.status === 400, `Expected response code 400 when creating user, but received ${response.status}`);
+
+        }
+    )
+%}
+
+### Edit an existing user
+PATCH {{protocol}}{{host}}:{{port}}/users/2
+Content-Type: application/json
+Authorization: Bearer {{admin_token}}
+
+{
+  "username": "customer_user",
+  "password": "customer_password",
+  "role": 2,
+  "email": "customerrr@example.com"
+}
+
+> {%
+    client.test(
+        "Edit user password and role",
+        function () {
+            client.assert(response.status === 200, "Failed to edit user");
+            const user = JSON.parse(request.body());
+            client.assert(user.username === "customer_user", "username variable not assigned correctly");
+            client.assert(user.email === "customerrr@example.com", "Email variable not assigned correctly");
+            client.assert(user.password === "customer_password", "Password variable not assigned correctly");
+            client.assert(user.role === 2, "Role variable not assigned correctly");
+        }
+    )
+%}
+
+### Edit an existing user - bad weather
+PATCH {{protocol}}{{host}}:{{port}}/users/12000
+Content-Type: application/json
+Authorization: Bearer {{admin_token}}
+
+{
+  "id": 12000,
+  "username": "customer_test",
+  "password": "customer_new",
+  "role": 2,
+  "email": "notanemail"
+}
+
+> {%
+    client.test(
+        "Edit user email and password",
+        function () {
+            client.assert(response.status === 400, `Expected response code 400 when editing user, but received ${response.status}`);
+        }
+    )
+%}
+
+### Delete an user
+DELETE {{protocol}}{{host}}:{{port}}/users/2
+Content-Type: application/json
+Authorization: Bearer {{admin_token}}
+
+> {%
+    client.test(
+        "Delete a user",
+        function () {
+            client.assert(response.status === 200, `Failed to delete a user when expected status code 200, but received ${response.status}`);
+        }
+    )
+%}
+
+### Delete an user - bad weather
+DELETE {{protocol}}{{host}}:{{port}}/users/-1
+Content-Type: application/json
+Authorization: Bearer {{admin_token}}
+
+> {%
+    client.test(
+        "Delete a user",
+        function () {
+            client.assert(response.status === 404, `Expected error code 404 when deleting user that does not exist, but received ${response.status}`);
+        }
+    )
+%}
+
+### Delete an user - bad weather - authenthication
+DELETE {{protocol}}{{host}}:{{port}}/users/2
+Content-Type: application/json
+
+> {%
+    client.test(
+        "Delete an user",
+        function () {
+            client.assert(response.status === 500, `Expected error code 500 when deleting user without having the required rights, but received ${response.status}`);
+        }
+    )
+%}
